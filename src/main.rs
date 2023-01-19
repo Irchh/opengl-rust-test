@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::mem::size_of_val;
 use sdl2::event::Event;
 use sdl2::video::GLProfile;
 
@@ -11,6 +12,8 @@ fn find_sdl_gl_driver() -> Option<u32> {
     }
     None
 }
+
+type Vertex = [f32; 3];
 
 fn main() {
     let sdl_context = sdl2::init().expect("SDL init failed!");
@@ -35,6 +38,9 @@ fn main() {
 
     'kuukkis: loop {
         unsafe {
+            gl::ClearColor(0.6, 0.0, 0.8, 1.0);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+
             let mut vao = 0;
             let mut vbo = 0;
             gl::GenVertexArrays(1, &mut vao);
@@ -43,10 +49,17 @@ fn main() {
             gl::BindVertexArray(vao);
             gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
 
+            const VERTICES: [Vertex; 3] =
+                [[-0.5, -0.5, 0.0], [0.5, -0.5, 0.0], [0.0, 0.5, 0.0]];
+
+            gl::BufferData(
+                gl::ARRAY_BUFFER,
+                size_of_val(&VERTICES) as isize,
+                VERTICES.as_ptr().cast(),
+                gl::STATIC_DRAW
+            );
 
 
-            gl::ClearColor(0.6, 0.0, 0.8, 1.0);
-            gl::Clear(gl::COLOR_BUFFER_BIT);
         }
 
         window.gl_swap_window();
